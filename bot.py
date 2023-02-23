@@ -7,7 +7,8 @@ logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
 logging.getLogger("imdbpy").setLevel(logging.ERROR)
 
-from pyrogram import Client, __version__
+
+from pyrogram import Client, __version__, filters
 from pyrogram.raw.all import layer
 from database.ia_filterdb import Media
 from database.users_chats_db import db
@@ -19,7 +20,7 @@ from Script import script
 from datetime import date, datetime 
 import pytz
 from aiohttp import web
-from plugins import web_server, __repo__, __license__, __copyright__
+from plugins import web_server
 
 class Bot(Client):
 
@@ -61,7 +62,7 @@ class Bot(Client):
     async def stop(self, *args):
         await super().stop()
         logging.info("Bot stopped. Bye.")
-
+    
     async def iter_messages(
         self,
         chat_id: Union[int, str],
@@ -102,7 +103,7 @@ class Bot(Client):
                 current += 1
 
 
-   app = Bot()
-   app.run()
 
 
+    app = Bot()
+    app.run()
