@@ -1,27 +1,25 @@
 import logging
 import logging.config
 
-from aiohttp import web
-from plugins import web_server
-
 # Get logging configurations
 logging.config.fileConfig('logging.conf')
 logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
 logging.getLogger("imdbpy").setLevel(logging.ERROR)
 
-from pyrogram.errors import BadRequest, Unauthorized
-from datetime import datetime
-from pytz import timezone
 from pyrogram import Client, __version__
 from pyrogram.raw.all import layer
 from database.ia_filterdb import Media
 from database.users_chats_db import db
-from info import SESSION, API_ID, API_HASH, BOT_TOKEN, LOG_STR, TIMEZONE, LOG_CHANNEL, PORT
+from info import SESSION, API_ID, API_HASH, BOT_TOKEN, LOG_STR, LOG_CHANNEL, PORT
 from utils import temp
 from typing import Union, Optional, AsyncGenerator
 from pyrogram import types
-LOGGER = logging.getLogger(__name__)
+from Script import script 
+from datetime import date, datetime 
+import pytz
+from aiohttp import web
+from plugins import web_server
 
 class Bot(Client):
 
@@ -46,25 +44,19 @@ class Bot(Client):
         temp.ME = me.id
         temp.U_NAME = me.username
         temp.B_NAME = me.first_name
-        temp.B_LINK = me.mention
         self.username = '@' + me.username
-        self.uptime = datetime.now()
-        curr = datetime.now(timezone(TIMEZONE))
-        date = curr.strftime('%d %B, %Y')
-        time = curr.strftime('%I:%M:%S %p')
+        logging.info(f"{me.first_name} with for Pyrogram v{__version__} (Layer {layer}) started on {me.username}.")
+        logging.info(LOG_STR)
+        logging.info(script.LOGO)
+        tz = pytz.timezone('Asia/Kolkata')
+        today = date.today()
+        now = datetime.now(tz)
+        time = now.strftime("%H:%M:%S %p")
+        await self.send_message(chat_id=LOG_CHANNEL, text=script.RESTART_TXT.format(today, time))
         app = web.AppRunner(await web_server())
         await app.setup()
         bind_address = "0.0.0.0"
         await web.TCPSite(app, bind_address, PORT).start()
-        logging.info(f"{me.first_name} with for Pyrogram v{__version__} (Layer {layer}) started on {me.username}.")
-        logging.info(LOG_STR)
-        if LOG_CHANNEL:
-            try:
-                await self.send_message(LOG_CHANNEL, text=f"<b>{me.mention} Rᴇsᴛᴀʀᴛᴇᴅ !!\n\n📅 Dᴀᴛᴇ : <code>{date}</code>\n⏰ Tɪᴍᴇ : <code>{time}</code>\n🌐 Tɪᴍᴇᴢᴏɴᴇ : <code>{TIMEZONE}</code>\n\n🉐 Vᴇʀsɪᴏɴ : <code>v{__version__}</code></b>")
-            except Unauthorized:
-                LOGGER.warning("Bot isn't able to send message to LOG_CHANNEL")
-            except BadRequest as e:
-                LOGGER.error(e)
 
     async def stop(self, *args):
         await super().stop()
